@@ -16,18 +16,17 @@ def get_db():
 def get_user_by_username(db: Session, username: str):
     return db.query(models.Usuario).filter(models.Usuario.username == username).first()
 
-
 def create_user(db: Session, user: schemas.UserCreate):
-    hashed_password = auth.get_password_hash(user.hashed_password)  # Obtener hash de la contraseña
+    hashed_password = auth.get_password_hash(user.hashed_password)
+    print(f"Creating user {user.username} with hashed password {hashed_password}")
     db_user = models.Usuario(
-        username=user.username, 
-        hashed_password=hashed_password  # Usar el hash de la contraseña
+        username=user.username,
+        hashed_password=hashed_password
     )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
-
 
 
 # Usuarios

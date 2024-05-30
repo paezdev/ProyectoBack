@@ -1,4 +1,5 @@
 from fastapi import Body, Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from typing import List
 from datetime import timedelta
@@ -8,6 +9,21 @@ from jose import JWTError, jwt
 import requests
 
 app = FastAPI()
+
+# Configuración de CORS
+origins = [
+    "http://localhost:8000",
+    "http://localhost:3000",
+    # Agrega aquí las URLs que necesites permitir
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Configuración de la base de datos
 models.Base.metadata.create_all(bind=database.engine)
@@ -21,18 +37,19 @@ def get_db():
         db.close()
 
 # Configuración de autenticación
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+#oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 @app.post("/users/", response_model=schemas.User)
 def create_user(user_create: schemas.UserCreate, db: Session = Depends(database.get_db)):
     db_user = crud.get_user_by_username(db, username=user_create.username)
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
-    hashed_password = auth.get_password_hash(user_create.hashed_password)  # Corregir el acceso al atributo
+   #hashed_password = auth.get_password_hash(user_create.hashed_password)  # Corregir el acceso al atributo
     # Crear un nuevo objeto UserCreate con el atributo hashed_password actualizado
-    new_user_create = schemas.UserCreate(username=user_create.username, hashed_password=hashed_password)
+    #new_user_create = schemas.UserCreate(username=user_create.username, hashed_password=hashed_password)
     # Pasar el objeto UserCreate actualizado al crear usuario
-    return crud.create_user(db=db, user=new_user_create)
+    #return crud.create_user(db=db, user=new_user_create)
+    return crud.create_user(db=db, user=user_create)
 
 @app.post("/token", response_model=schemas.Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):

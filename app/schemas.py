@@ -25,7 +25,7 @@ class User(UserBase):
 
 class LoginForm(BaseModel):
     username: str
-    hashed_password: str
+    password: str
 
 
 
