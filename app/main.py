@@ -44,12 +44,12 @@ def create_user(user_create: schemas.UserCreate, db: Session = Depends(database.
     db_user = crud.get_user_by_username(db, username=user_create.username)
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
-   #hashed_password = auth.get_password_hash(user_create.hashed_password)  # Corregir el acceso al atributo
-    # Crear un nuevo objeto UserCreate con el atributo hashed_password actualizado
-    #new_user_create = schemas.UserCreate(username=user_create.username, hashed_password=hashed_password)
-    # Pasar el objeto UserCreate actualizado al crear usuario
-    #return crud.create_user(db=db, user=new_user_create)
-    return crud.create_user(db=db, user=user_create)
+    
+    # Hash the password before creating the user
+    hashed_password = auth.get_password_hash(user_create.hashed_password)
+    new_user_create = schemas.UserCreate(username=user_create.username, hashed_password=hashed_password)
+    
+    return crud.create_user(db=db, user=new_user_create)
 
 @app.post("/token", response_model=schemas.Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(database.get_db)):
@@ -65,22 +65,6 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
         data={"sub": user.username}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@app.post("/get-token/")
-async def get_access_token(username: str = Body(...), password: str = Body(...)):
-    token_url = "http://localhost:8000/token"
-    payload = {
-        "username": username,
-        "password": password
-    }
-    response = requests.post(token_url, data=payload)
-    if response.status_code == 200:
-        return {"access_token": response.json()["access_token"]}
-    else:
-        raise HTTPException(status_code=response.status_code, detail="Error al obtener el token de acceso")
-
-
 
 
 # Rutas CRUD para Materias
