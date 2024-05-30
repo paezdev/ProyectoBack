@@ -6,6 +6,7 @@ from datetime import date
 class Token(BaseModel):
     access_token: str
     token_type: str
+    expires_in: str  # Añadir el campo expires_in
 
 class TokenData(BaseModel):
     username: Optional[str] = None
