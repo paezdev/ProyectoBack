@@ -14,7 +14,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 def verify_password(plain_password, hashed_password):
-    print(f"Verifying password: {plain_password} with hash: {hashed_password}")
     return pwd_context.verify(plain_password, hashed_password)
 
 def get_password_hash(password):
@@ -23,12 +22,9 @@ def get_password_hash(password):
 def authenticate_user(db: Session, username: str, password: str):
     user = crud.get_user_by_username(db, username)
     if not user:
-        print(f"User {username} not found")
         return False
     if not verify_password(password, user.hashed_password):
-        print(f"Invalid password for user {username}")
         return False
-    print(f"User {username} authenticated successfully")
     return user
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
@@ -59,3 +55,30 @@ def get_current_user(db: Session = Depends(database.get_db), token: str = Depend
     if user is None:
         raise credentials_exception
     return user
+
+# Nueva función para verificar si el usuario es admin o administrador
+def verify_admin_or_administrador(user: schemas.User = Depends(get_current_user)):
+    if user.role.name not in ["admin", "administrador"]:
+        raise HTTPException(status_code=403, detail="Operation not permitted")
+    return user
+
+def verify_admin(user: schemas.User = Depends(get_current_user)):
+    if user.role.name != "administrador":
+        raise HTTPException(status_code=403, detail="Operation not permitted")
+    return user
+
+def verify_docente(user: schemas.User = Depends(get_current_user)):
+    if user.role.name != "docente":
+        raise HTTPException(status_code=403, detail="Operation not permitted")
+    return user
+
+def verify_estudiante(user: schemas.User = Depends(get_current_user)):
+    if user.role.name != "estudiante":
+        raise HTTPException(status_code=403, detail="Operation not permitted")
+    return user
+
+def verify_acudiente(user: schemas.User = Depends(get_current_user)):
+    if user.role.name != "acudiente":
+        raise HTTPException(status_code=403, detail="Operation not permitted")
+    return user
+

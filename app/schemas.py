@@ -1,36 +1,36 @@
-from pydantic import BaseModel, EmailStr
-from typing import Optional, List
-from datetime import date
+from pydantic import BaseModel
+from typing import List, Optional
 
-# Autenticación
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-    expires_in: str  # Añadir el campo expires_in
+# Esquema para Role
+class RoleBase(BaseModel):
+    name: str
 
-class TokenData(BaseModel):
-    username: Optional[str] = None
+class RoleCreate(RoleBase):
+    pass
 
+class Role(RoleBase):
+    id: int
+
+    class Config:
+        from_attributes = True  # Reemplaza orm_mode
+
+# Esquema para User
 class UserBase(BaseModel):
     username: str
 
 class UserCreate(UserBase):
-    hashed_password: str  # Cambiar 'password' por 'hashed_password'
+    password: str
+    role_id: int
 
 class User(UserBase):
     id: int
     is_active: bool
+    role: Role
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Reemplaza orm_mode
 
-class LoginForm(BaseModel):
-    username: str
-    password: str
-
-
-
-# Materia
+# Esquema para Materia
 class MateriaBase(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
@@ -42,95 +42,29 @@ class Materia(MateriaBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Reemplaza orm_mode
 
-# Notas
+# Esquema para Nota
 class NotaBase(BaseModel):
     estudiante_id: int
     materia_id: int
-    valor: float
-    fecha_asignacion: date
+    calificacion: int
 
 class NotaCreate(NotaBase):
     pass
 
 class Nota(NotaBase):
     id: int
+    estudiante: User
+    materia: Materia
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # Reemplaza orm_mode
 
+# Esquema para Token
+class Token(BaseModel):
+    access_token: str
+    token_type: str
 
-# Estudiantes
-class EstudianteBase(BaseModel):
-    nombre: str
-    grado_academico: str
-    usuario_id: int
-    acudiente_id: Optional[int] = None
-
-class EstudianteCreate(EstudianteBase):
-    pass
-
-class Estudiante(EstudianteBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-
-# Docente
-class DocenteBase(BaseModel):
-    nombre: str
-
-class DocenteCreate(DocenteBase):
-    usuario_id: int
-
-class Docente(DocenteBase):
-    id: int
-    usuario_id: int
-
-    class Config:
-        orm_mode = True
-
-# Acudientes
-class AcudienteBase(BaseModel):
-    nombre: str
-
-class AcudienteCreate(AcudienteBase):
-    usuario_id: int
-
-class Acudiente(AcudienteBase):
-    id: int
-    usuario_id: int
-
-    class Config:
-        orm_mode = True
-
-# AcudientesEstudiantes
-class AcudienteEstudianteBase(BaseModel):
-    acudiente_id: int
-    estudiante_id: int
-
-class AcudienteEstudianteCreate(AcudienteEstudianteBase):
-    pass
-
-class AcudienteEstudiante(AcudienteEstudianteBase):
-    id: int
-
-    class Config:
-        orm_mode = True
-
-# Definición de Usuario
-class UsuarioBase(BaseModel):
-    username: str
-    hashed_password: str  # Cambiar 'password' por 'hashed_password'
-
-class UsuarioCreate(UsuarioBase):
-    pass
-
-class Usuario(UsuarioBase):
-    id: int
-    is_active: Optional[bool] = True
-
-    class Config:
-        orm_mode = True
+class TokenData(BaseModel):
+    username: Optional[str] = None
